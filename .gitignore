@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+*.pyo
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Logs
+*.log
+railway_logs/
+
+# Archive (internal docs, not for GitHub)
+archive/
+
+# Secrets
+*.pem
+*.key
+credentials.json
