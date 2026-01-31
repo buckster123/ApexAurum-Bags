@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexAurum Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'apex-dark': '#0a0a0f',
+            'apex-card': '#12121a',
+            'apex-border': '#1e1e2e',
+            'gold': '#d4af37',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #0a0a0f; }
+    .btn-primary {
+      @apply px-4 py-2 bg-gold text-black font-medium rounded-lg hover:bg-gold/90 transition-colors disabled:opacity-50;
+    }
+    .btn-secondary {
+      @apply px-4 py-2 bg-apex-card border border-apex-border text-white rounded-lg hover:bg-apex-border transition-colors;
+    }
+    .btn-danger {
+      @apply px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors;
+    }
+    .input {
+      @apply w-full px-3 py-2 bg-apex-dark border border-apex-border rounded-lg text-white placeholder-gray-500 focus:border-gold focus:outline-none;
+    }
+    /* Ensure password dots and all input text are visible on dark bg */
+    input, select, textarea { color: #ffffff !important; background-color: #0a0a0f !important; }
+    input[type="password"] { -webkit-text-security: disc; color: #ffffff !important; }
+    input::placeholder { color: #6b7280 !important; }
+    .card {
+      @apply bg-apex-card border border-apex-border rounded-xl p-6;
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen">
+  <div id="app">
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+      <div class="card max-w-md w-full">
+        <h1 class="text-2xl font-bold text-center mb-6 text-gold">ApexAurum Admin</h1>
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Email</label>
+            <input type="email" id="login-email" class="input" required>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">Password</label>
+            <input type="password" id="login-password" class="input" required>
+          </div>
+          <div id="login-error" class="text-red-400 text-sm hidden"></div>
+          <button type="submit" class="btn-primary w-full">Sign In</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="dashboard" class="hidden">
+      <!-- Header -->
+      <header class="bg-apex-card border-b border-apex-border px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+          <h1 class="text-xl font-bold text-gold">ApexAurum Admin</h1>
+          <div class="flex items-center gap-4">
+            <span id="admin-email" class="text-sm text-gray-400"></span>
+            <button onclick="logout()" class="btn-secondary text-sm">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tabs -->
+      <div class="bg-apex-card border-b border-apex-border">
+        <div class="max-w-7xl mx-auto flex gap-1 px-6">
+          <button onclick="showTab('coupons')" data-tab="coupons" class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:border-gold/50 transition-colors">Coupons</button>
+          <button onclick="showTab('users')" data-tab="users" class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:border-gold/50 transition-colors">Users</button>
+          <button onclick="showTab('stats')" data-tab="stats" class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:border-gold/50 transition-colors">Stats</button>
+          <button onclick="showTab('reports')" data-tab="reports" class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:border-gold/50 transition-colors">Reports</button>
+          <button onclick="showTab('usage')" data-tab="usage" class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:border-gold/50 transition-colors">Usage</button>
+          <button onclick="showTab('grants')" data-tab="grants" class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:border-gold/50 transition-colors">Grants</button>
+          <button onclick="showTab('errors')" data-tab="errors" class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:border-gold/50 transition-colors">Errors</button>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <main class="max-w-7xl mx-auto p-6">
+        <!-- Coupons Tab -->
+        <div id="tab-coupons" class="tab-content">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold">Coupons</h2>
+            <button onclick="showCreateCoupon()" class="btn-primary">+ Create Coupon</button>
+          </div>
+
+          <!-- Create Coupon Form (hidden by default) -->
+          <div id="create-coupon-form" class="card mb-6 hidden">
+            <h3 class="text-lg font-semibold mb-4">Create New Coupon</h3>
+            <form onsubmit="createCoupon(event)" class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Code</label>
+                <input type="text" id="coupon-code" class="input uppercase" placeholder="OPUS3LIVES" required>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Name</label>
+                <input type="text" id="coupon-name" class="input" placeholder="Opus 3 Memorial" required>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Type</label>
+                <select id="coupon-type" class="input" required onchange="updateCouponForm()">
+                  <option value="credit_bonus">Credit Bonus</option>
+                  <option value="tier_upgrade">Tier Upgrade</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1" id="value-label">Credits</label>
+                <input type="number" id="coupon-value" class="input" placeholder="500" min="1" required>
+              </div>
+              <div id="tier-select-wrapper" class="hidden">
+                <label class="block text-sm text-gray-400 mb-1">Target Tier</label>
+                <select id="coupon-tier" class="input">
+                  <option value="">Select tier...</option>
+                  <option value="seeker">Seeker ($10)</option>
+                  <option value="adept">Adept ($30)</option>
+                  <option value="opus">Opus ($100)</option>
+                  <option value="azothic">Azothic ($300)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Max Uses (blank = unlimited)</label>
+                <input type="number" id="coupon-max-uses" class="input" placeholder="100" min="1">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Max Per User</label>
+                <input type="number" id="coupon-max-per-user" class="input" value="1" min="1" required>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Expires (blank = never)</label>
+                <input type="datetime-local" id="coupon-expires" class="input">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm text-gray-400 mb-1">Description (optional)</label>
+                <input type="text" id="coupon-description" class="input" placeholder="A gift for our early adopters">
+              </div>
+              <div class="md:col-span-2 flex gap-2">
+                <button type="submit" class="btn-primary">Create Coupon</button>
+                <button type="button" onclick="hideCreateCoupon()" class="btn-secondary">Cancel</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Coupons List -->
+          <div class="card">
+            <div id="coupons-loading" class="text-center py-8 text-gray-400">Loading coupons...</div>
+            <div id="coupons-empty" class="text-center py-8 text-gray-500 hidden">No coupons yet</div>
+            <table id="coupons-table" class="w-full hidden">
+              <thead>
+                <tr class="text-left text-sm text-gray-400 border-b border-apex-border">
+                  <th class="pb-3">Code</th>
+                  <th class="pb-3">Type</th>
+                  <th class="pb-3">Value</th>
+                  <th class="pb-3">Uses</th>
+                  <th class="pb-3">Status</th>
+                  <th class="pb-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="coupons-body" class="divide-y divide-apex-border"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="tab-users" class="tab-content hidden">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold">Users</h2>
+            <div class="flex gap-2">
+              <input type="text" id="user-search" class="input w-64" placeholder="Search by email..." oninput="searchUsers()">
+            </div>
+          </div>
+          <div class="card">
+            <div id="users-loading" class="text-center py-8 text-gray-400">Loading users...</div>
+            <div id="users-empty" class="text-center py-8 text-gray-500 hidden">No users found</div>
+            <table id="users-table" class="w-full hidden">
+              <thead>
+                <tr class="text-left text-sm text-gray-400 border-b border-apex-border">
+                  <th class="pb-3">Email</th>
+                  <th class="pb-3">Tier</th>
+                  <th class="pb-3">Messages</th>
+                  <th class="pb-3">Credits</th>
+                  <th class="pb-3">Admin</th>
+                  <th class="pb-3">Joined</th>
+                  <th class="pb-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-body" class="divide-y divide-apex-border"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div id="tab-stats" class="tab-content hidden">
+          <h2 class="text-xl font-bold mb-6">System Stats</h2>
+
+          <!-- Overview Row -->
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div class="card text-center">
+              <div class="text-2xl font-bold text-gold" id="stat-users">-</div>
+              <div class="text-xs text-gray-400 mt-1">Users</div>
+            </div>
+            <div class="card text-center">
+              <div class="text-2xl font-bold text-green-400" id="stat-messages">-</div>
+              <div class="text-xs text-gray-400 mt-1">Messages</div>
+            </div>
+            <div class="card text-center">
+              <div class="text-2xl font-bold text-blue-400" id="stat-conversations">-</div>
+              <div class="text-xs text-gray-400 mt-1">Conversations</div>
+            </div>
+            <div class="card text-center">
+              <div class="text-2xl font-bold text-purple-400" id="stat-coupons">-</div>
+              <div class="text-xs text-gray-400 mt-1">Active Coupons</div>
+            </div>
+            <div class="card text-center">
+              <div class="text-2xl font-bold text-cyan-400" id="stat-files">-</div>
+              <div class="text-xs text-gray-400 mt-1">Vault Files</div>
+            </div>
+          </div>
+
+          <!-- Features Row -->
+          <h3 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wider">Features</h3>
+          <div class="grid md:grid-cols-4 gap-4 mb-6">
+            <!-- Music -->
+            <div class="card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold">Music Tasks</span>
+                <span class="text-xl font-bold text-orange-400" id="stat-music-total">-</span>
+              </div>
+              <div id="stat-music-breakdown" class="text-xs text-gray-400 space-y-1"></div>
+            </div>
+            <!-- Council -->
+            <div class="card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold">Council Sessions</span>
+                <span class="text-xl font-bold text-yellow-400" id="stat-council-total">-</span>
+              </div>
+              <div id="stat-council-breakdown" class="text-xs text-gray-400 space-y-1"></div>
+            </div>
+            <!-- Jam -->
+            <div class="card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold">Jam Sessions</span>
+                <span class="text-xl font-bold text-pink-400" id="stat-jam-total">-</span>
+              </div>
+            </div>
+            <!-- Nursery -->
+            <div class="card">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-sm font-semibold text-gray-300">Nursery</span>
+                <span class="text-xl font-bold text-emerald-400" id="stat-nursery-jobs">-</span>
+              </div>
+              <div class="text-xs text-gray-400 space-y-1">
+                <div class="flex justify-between"><span>Datasets</span><span class="font-mono" id="stat-nursery-datasets">-</span></div>
+                <div class="flex justify-between"><span>Training Jobs</span><span class="font-mono" id="stat-nursery-jobs-val">-</span></div>
+                <div class="flex justify-between"><span>Models</span><span class="font-mono" id="stat-nursery-models">-</span></div>
+                <div class="flex justify-between"><span>Apprentices</span><span class="font-mono" id="stat-nursery-apprentices">-</span></div>
+              </div>
+              <div id="stat-nursery-breakdown" class="text-xs text-gray-400 space-y-1 mt-2 pt-2 border-t border-gray-700"></div>
+            </div>
+          </div>
+
+          <!-- Storage & Memory Row -->
+          <h3 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wider">Storage & Memory</h3>
+          <div class="grid md:grid-cols-2 gap-4 mb-6">
+            <div class="card flex items-center justify-between">
+              <div>
+                <div class="text-sm font-semibold">Neural Vectors</div>
+                <div class="text-xs text-gray-400">Cortex memory embeddings</div>
+              </div>
+              <div class="text-2xl font-bold text-emerald-400" id="stat-vectors">-</div>
+            </div>
+            <div class="card flex items-center justify-between">
+              <div>
+                <div class="text-sm font-semibold">Vault Storage</div>
+                <div class="text-xs text-gray-400" id="stat-vault-files-label">-</div>
+              </div>
+              <div class="text-2xl font-bold text-cyan-400" id="stat-vault-storage">-</div>
+            </div>
+          </div>
+
+          <!-- Users by Tier -->
+          <h3 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wider">Users by Tier</h3>
+          <div class="card mb-6">
+            <div id="tier-breakdown" class="space-y-2"></div>
+          </div>
+
+          <!-- LLM Providers -->
+          <h3 class="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wider">LLM Providers</h3>
+          <div class="card">
+            <div id="provider-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+          </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="tab-reports" class="tab-content hidden">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold">Bug Reports</h2>
+            <div class="flex gap-2">
+              <select id="report-status-filter" class="input w-48" onchange="loadReports(this.value)">
+                <option value="">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="acknowledged">Acknowledged</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
+          </div>
+          <div class="card">
+            <div id="reports-loading" class="text-center py-8 text-gray-400">Loading reports...</div>
+            <div id="reports-empty" class="text-center py-8 text-gray-500 hidden">No reports found</div>
+            <table id="reports-table" class="w-full hidden">
+              <thead>
+                <tr class="text-left text-sm text-gray-400 border-b border-apex-border">
+                  <th class="pb-3">Status</th>
+                  <th class="pb-3">Category</th>
+                  <th class="pb-3">User</th>
+                  <th class="pb-3">Description</th>
+                  <th class="pb-3">Page</th>
+                  <th class="pb-3">Created</th>
+                </tr>
+              </thead>
+              <tbody id="reports-body" class="divide-y divide-apex-border"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Usage Tab -->
+        <div id="tab-usage" class="tab-content hidden">
+          <h2 class="text-xl font-bold mb-6">Usage Reports</h2>
+
+          <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <!-- Messages & Features -->
+            <div class="bg-apex-dark/50 border border-apex-border rounded-lg p-6">
+              <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Messages &amp; Features</h3>
+              <div id="usage-features" class="space-y-3">
+                <div class="text-gray-500 text-sm">Loading...</div>
+              </div>
+            </div>
+
+            <!-- Tier Distribution -->
+            <div class="bg-apex-dark/50 border border-apex-border rounded-lg p-6">
+              <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Tier Distribution</h3>
+              <div id="usage-tier-dist" class="space-y-3">
+                <div class="text-gray-500 text-sm">Loading...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Revenue -->
+          <div class="bg-apex-dark/50 border border-apex-border rounded-lg p-6">
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Revenue Overview</h3>
+            <p class="text-gray-500 text-sm py-4 text-center">
+              Revenue tracking integrates with your Stripe Dashboard.<br>
+              <a href="https://dashboard.stripe.com" target="_blank" class="text-gold hover:text-gold-bright">Open Stripe Dashboard &rarr;</a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Grants Tab -->
+        <div id="tab-grants" class="tab-content hidden">
+          <h2 class="text-xl font-bold mb-6">Platform Provider Grants</h2>
+
+          <!-- Section A: Tier Grants -->
+          <div class="card mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Tier Platform Grants</h3>
+              <button onclick="saveTierGrants()" class="btn-primary text-sm">Save Tier Grants</button>
+            </div>
+            <p class="text-sm text-gray-400 mb-4">Enable platform providers for each subscription tier. Changes apply to all users on that tier.</p>
+            <div id="grants-tier-loading" class="text-center py-8 text-gray-400">Loading tier grants...</div>
+            <div class="overflow-x-auto">
+              <table id="grants-tier-table" class="w-full hidden">
+                <thead>
+                  <tr class="text-left text-sm text-gray-400 border-b border-apex-border">
+                    <th class="pb-3 pr-4">Provider</th>
+                    <th class="pb-3 px-3 text-center">Free Trial</th>
+                    <th class="pb-3 px-3 text-center">Seeker</th>
+                    <th class="pb-3 px-3 text-center">Adept</th>
+                    <th class="pb-3 px-3 text-center">Opus</th>
+                    <th class="pb-3 px-3 text-center">Azothic</th>
+                  </tr>
+                </thead>
+                <tbody id="grants-tier-body" class="divide-y divide-apex-border"></tbody>
+              </table>
+            </div>
+            <div id="grants-tier-status" class="text-sm mt-3 hidden"></div>
+          </div>
+
+          <!-- Section B: User Grants -->
+          <div class="card mb-6">
+            <h3 class="text-lg font-semibold mb-4">User Platform Grants</h3>
+            <p class="text-sm text-gray-400 mb-4">Grant or revoke platform provider access for individual users.</p>
+            <div class="flex gap-2 mb-4">
+              <input type="text" id="grant-user-search" class="input flex-1" placeholder="Search by email...">
+              <button onclick="searchGrantUser()" class="btn-primary text-sm">Search</button>
+            </div>
+            <div id="grant-user-result" class="hidden">
+              <div class="border border-apex-border rounded-lg p-4 bg-apex-dark/50">
+                <div class="flex items-center gap-3 mb-4">
+                  <span class="text-sm text-gray-400">User:</span>
+                  <span id="grant-user-email" class="font-semibold text-gold"></span>
+                  <span id="grant-user-tier" class="px-2 py-0.5 rounded text-xs font-medium bg-gray-500/20 text-gray-400"></span>
+                </div>
+                <div id="grant-user-providers" class="space-y-3"></div>
+              </div>
+            </div>
+            <div id="grant-user-empty" class="text-gray-500 text-sm hidden">No user found with that email.</div>
+            <div id="grant-user-status" class="text-sm mt-3 hidden"></div>
+          </div>
+
+          <!-- Section C: Active Grants Overview -->
+          <div class="card">
+            <h3 class="text-lg font-semibold mb-4">Active Grants Overview</h3>
+            <div id="grants-overview-loading" class="text-center py-8 text-gray-400">Loading overview...</div>
+            <div id="grants-overview" class="hidden">
+              <h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Tier Grants Summary</h4>
+              <div id="grants-overview-tiers" class="space-y-2 mb-6"></div>
+
+              <h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Users with Individual Grants</h4>
+              <div id="grants-overview-users-empty" class="text-gray-500 text-sm hidden">No individual user grants configured.</div>
+              <table id="grants-overview-users-table" class="w-full hidden">
+                <thead>
+                  <tr class="text-left text-sm text-gray-400 border-b border-apex-border">
+                    <th class="pb-3">Email</th>
+                    <th class="pb-3">Name</th>
+                    <th class="pb-3">Granted Providers</th>
+                  </tr>
+                </thead>
+                <tbody id="grants-overview-users-body" class="divide-y divide-apex-border"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Errors Tab -->
+        <div id="tab-errors" class="tab-content hidden">
+          <!-- Settings Card -->
+          <div class="card mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Error Tracking Settings</h3>
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <span class="text-sm text-gray-400">Enabled</span>
+                  <input type="checkbox" id="error-tracking-enabled" onchange="updateErrorSettings()" class="w-4 h-4 accent-gold">
+                </label>
+              </div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Min Severity</label>
+                <select id="error-min-severity" onchange="updateErrorSettings()" class="input">
+                  <option value="warning">Warning+</option>
+                  <option value="error">Error+</option>
+                  <option value="critical">Critical only</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Retention</label>
+                <select id="error-retention" onchange="updateErrorSettings()" class="input">
+                  <option value="7">7 days</option>
+                  <option value="14">14 days</option>
+                  <option value="30">30 days</option>
+                  <option value="60">60 days</option>
+                  <option value="90">90 days</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Time Range</label>
+                <select id="error-hours" onchange="loadErrors()" class="input">
+                  <option value="1">Last hour</option>
+                  <option value="6">Last 6 hours</option>
+                  <option value="24" selected>Last 24 hours</option>
+                  <option value="72">Last 3 days</option>
+                  <option value="168">Last 7 days</option>
+                  <option value="720">Last 30 days</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="card text-center">
+              <div class="text-2xl font-bold text-white" id="err-stat-total">-</div>
+              <div class="text-xs text-gray-400 mt-1">Total</div>
+            </div>
+            <div class="card text-center">
+              <div class="text-2xl font-bold text-red-500" id="err-stat-critical">-</div>
+              <div class="text-xs text-gray-400 mt-1">Critical</div>
+            </div>
+            <div class="card text-center">
+              <div class="text-2xl font-bold text-orange-400" id="err-stat-error">-</div>
+              <div class="text-xs text-gray-400 mt-1">Error</div>
+            </div>
+            <div class="card text-center">
+              <div class="text-2xl font-bold text-yellow-400" id="err-stat-warning">-</div>
+              <div class="text-xs text-gray-400 mt-1">Warning</div>
+            </div>
+          </div>
+
+          <!-- Filters & Actions -->
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <select id="error-filter-category" onchange="loadErrors()" class="input w-auto">
+              <option value="">All categories</option>
+              <option value="backend_exception">Backend Exception</option>
+              <option value="http_error">HTTP Error</option>
+              <option value="tool_failure">Tool Failure</option>
+              <option value="frontend_error">Frontend Error</option>
+              <option value="llm_error">LLM Error</option>
+              <option value="webhook_error">Webhook Error</option>
+            </select>
+            <select id="error-filter-severity" onchange="loadErrors()" class="input w-auto">
+              <option value="">All severities</option>
+              <option value="critical">Critical</option>
+              <option value="error">Error</option>
+              <option value="warning">Warning</option>
+            </select>
+            <div class="flex-1"></div>
+            <button onclick="exportErrors('json')" class="btn-secondary text-sm">Export JSON</button>
+            <button onclick="exportErrors('csv')" class="btn-secondary text-sm">Export CSV</button>
+            <button onclick="purgeErrors()" class="btn-danger text-sm">Purge All</button>
+          </div>
+
+          <!-- Errors Table -->
+          <div class="card">
+            <div id="errors-loading" class="text-center py-8 text-gray-400">Loading errors...</div>
+            <div id="errors-empty" class="text-center py-8 text-gray-500 hidden">No errors found</div>
+            <table id="errors-table" class="w-full hidden">
+              <thead>
+                <tr class="text-left text-sm text-gray-400 border-b border-apex-border">
+                  <th class="pb-3">Time</th>
+                  <th class="pb-3">Category</th>
+                  <th class="pb-3">Severity</th>
+                  <th class="pb-3">Type</th>
+                  <th class="pb-3">Message</th>
+                  <th class="pb-3">Endpoint</th>
+                </tr>
+              </thead>
+              <tbody id="errors-body" class="divide-y divide-apex-border"></tbody>
+            </table>
+            <!-- Pagination -->
+            <div id="errors-pagination" class="flex items-center justify-between mt-4 pt-4 border-t border-apex-border hidden">
+              <span id="errors-page-info" class="text-sm text-gray-400"></span>
+              <div class="flex gap-2">
+                <button onclick="errorsPrevPage()" id="errors-prev-btn" class="btn-secondary text-sm" disabled>Prev</button>
+                <button onclick="errorsNextPage()" id="errors-next-btn" class="btn-secondary text-sm">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    // Same-origin: admin served from backend, no CORS needed
+    const API_BASE = window.location.origin;
+
+    // State
+    let token = localStorage.getItem('admin_token');
+    let currentTab = 'coupons';
+    let users = [];
+    let coupons = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      if (token) {
+        checkAuth();
+      }
+    });
+
+    // Auth
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const errorEl = document.getElementById('login-error');
+      errorEl.classList.add('hidden');
+
+      console.log('[Admin] Logging in as:', email, '→', API_BASE);
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        console.log('[Admin] Login response:', res.status);
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || `Login failed (${res.status})`);
+        }
+
+        const data = await res.json();
+        token = data.access_token;
+        localStorage.setItem('admin_token', token);
+        console.log('[Admin] Token received, checking admin status...');
+
+        // Check if user is admin
+        await checkAuth();
+      } catch (err) {
+        console.error('[Admin] Login error:', err);
+        errorEl.textContent = err.message || 'Connection failed - check console';
+        errorEl.classList.remove('hidden');
+      }
+    });
+
+    async function checkAuth() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        console.log('[Admin] Auth check:', res.status);
+
+        if (!res.ok) throw new Error('Not authenticated');
+
+        const user = await res.json();
+        console.log('[Admin] User:', user.email, 'is_admin:', user.is_admin);
+
+        if (!user.is_admin) {
+          const errorEl = document.getElementById('login-error');
+          errorEl.textContent = `Logged in as ${user.email} but is_admin is false. Set INITIAL_ADMIN_EMAIL=${user.email} in Railway backend env vars and redeploy.`;
+          errorEl.classList.remove('hidden');
+          logout();
+          return;
+        }
+
+        document.getElementById('admin-email').textContent = user.email;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+
+        showTab('coupons');
+      } catch (err) {
+        console.error('[Admin] Auth check failed:', err);
+        logout();
+      }
+    }
+
+    function logout() {
+      token = null;
+      localStorage.removeItem('admin_token');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('dashboard').classList.add('hidden');
+    }
+
+    // Tabs
+    function showTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('border-gold', 'text-gold');
+        el.classList.add('border-transparent');
+      });
+
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('border-gold', 'text-gold');
+
+      if (tab === 'coupons') loadCoupons();
+      if (tab === 'users') loadUsers();
+      if (tab === 'stats') loadStats();
+      if (tab === 'reports') loadReports();
+      if (tab === 'usage') loadUsage();
+      if (tab === 'grants') loadGrants();
+      if (tab === 'errors') { loadErrorSettings(); loadErrors(); }
+    }
+
+    // Coupons
+    async function loadCoupons() {
+      const loading = document.getElementById('coupons-loading');
+      const empty = document.getElementById('coupons-empty');
+      const table = document.getElementById('coupons-table');
+      const tbody = document.getElementById('coupons-body');
+
+      loading.classList.remove('hidden');
+      empty.classList.add('hidden');
+      table.classList.add('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/billing/admin/coupons?include_inactive=true`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load coupons');
+
+        const data = await res.json();
+        coupons = data.coupons;
+
+        loading.classList.add('hidden');
+
+        if (coupons.length === 0) {
+          empty.classList.remove('hidden');
+          return;
+        }
+
+        table.classList.remove('hidden');
+        tbody.innerHTML = coupons.map(c => `
+          <tr class="hover:bg-apex-dark/50">
+            <td class="py-3 font-mono text-gold">${c.code}</td>
+            <td class="py-3">
+              <span class="px-2 py-1 text-xs rounded ${c.coupon_type === 'credit_bonus' ? 'bg-green-500/20 text-green-400' : 'bg-purple-500/20 text-purple-400'}">
+                ${c.coupon_type}
+              </span>
+            </td>
+            <td class="py-3">${c.coupon_type === 'credit_bonus' ? c.value + ' credits' : c.value + ' days ' + (c.tier || '')}</td>
+            <td class="py-3">${c.current_uses}${c.max_uses ? '/' + c.max_uses : ''}</td>
+            <td class="py-3">
+              <span class="px-2 py-1 text-xs rounded ${c.is_active && c.is_valid ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                ${c.is_active ? (c.is_valid ? 'Active' : 'Expired') : 'Inactive'}
+              </span>
+            </td>
+            <td class="py-3">
+              ${c.is_active ? `<button onclick="deactivateCoupon('${c.code}')" class="text-red-400 hover:text-red-300 text-sm">Deactivate</button>` : '-'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        loading.textContent = 'Failed to load coupons';
+      }
+    }
+
+    function showCreateCoupon() {
+      document.getElementById('create-coupon-form').classList.remove('hidden');
+    }
+
+    function hideCreateCoupon() {
+      document.getElementById('create-coupon-form').classList.add('hidden');
+    }
+
+    function updateCouponForm() {
+      const type = document.getElementById('coupon-type').value;
+      const valueLabel = document.getElementById('value-label');
+      const tierWrapper = document.getElementById('tier-select-wrapper');
+
+      if (type === 'credit_bonus') {
+        valueLabel.textContent = 'Credits';
+        tierWrapper.classList.add('hidden');
+      } else {
+        valueLabel.textContent = 'Days';
+        tierWrapper.classList.remove('hidden');
+      }
+    }
+
+    async function createCoupon(e) {
+      e.preventDefault();
+
+      const type = document.getElementById('coupon-type').value;
+      const payload = {
+        code: document.getElementById('coupon-code').value,
+        name: document.getElementById('coupon-name').value,
+        coupon_type: type,
+        value: parseInt(document.getElementById('coupon-value').value),
+        max_uses_per_user: parseInt(document.getElementById('coupon-max-per-user').value) || 1,
+      };
+
+      const maxUses = document.getElementById('coupon-max-uses').value;
+      if (maxUses) payload.max_uses = parseInt(maxUses);
+
+      const description = document.getElementById('coupon-description').value;
+      if (description) payload.description = description;
+
+      const expires = document.getElementById('coupon-expires').value;
+      if (expires) payload.valid_until = new Date(expires).toISOString();
+
+      if (type === 'tier_upgrade') {
+        payload.tier = document.getElementById('coupon-tier').value;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/billing/admin/coupons`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.detail || 'Failed to create coupon');
+        }
+
+        hideCreateCoupon();
+        loadCoupons();
+
+        // Reset form
+        document.getElementById('coupon-code').value = '';
+        document.getElementById('coupon-name').value = '';
+        document.getElementById('coupon-value').value = '';
+        document.getElementById('coupon-description').value = '';
+        document.getElementById('coupon-max-uses').value = '';
+        document.getElementById('coupon-expires').value = '';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deactivateCoupon(code) {
+      if (!confirm(`Deactivate coupon ${code}?`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/billing/admin/coupons/${code}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to deactivate');
+
+        loadCoupons();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Users
+    async function loadUsers() {
+      const loading = document.getElementById('users-loading');
+      const empty = document.getElementById('users-empty');
+      const table = document.getElementById('users-table');
+      const tbody = document.getElementById('users-body');
+
+      loading.classList.remove('hidden');
+      empty.classList.add('hidden');
+      table.classList.add('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/users`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load users');
+
+        const data = await res.json();
+        users = data.users;
+
+        loading.classList.add('hidden');
+        renderUsers(users);
+      } catch (err) {
+        loading.textContent = 'Failed to load users (endpoint may not exist yet)';
+      }
+    }
+
+    function renderUsers(list) {
+      const empty = document.getElementById('users-empty');
+      const table = document.getElementById('users-table');
+      const tbody = document.getElementById('users-body');
+
+      if (list.length === 0) {
+        empty.classList.remove('hidden');
+        table.classList.add('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      table.classList.remove('hidden');
+
+      const tierColors = {
+        free_trial: 'bg-gray-500/20 text-gray-400',
+        seeker: 'bg-green-500/20 text-green-400',
+        adept: 'bg-blue-500/20 text-blue-400',
+        opus: 'bg-yellow-500/20 text-yellow-400',
+        azothic: 'bg-purple-500/20 text-purple-400',
+        // Legacy fallbacks
+        free: 'bg-gray-500/20 text-gray-400',
+        pro: 'bg-green-500/20 text-green-400',
+      };
+
+      const tierNames = {
+        free_trial: 'Free Trial',
+        seeker: 'Seeker',
+        adept: 'Adept',
+        opus: 'Opus',
+        azothic: 'Azothic',
+        // Legacy
+        free: 'Free Trial',
+        pro: 'Seeker',
+      };
+
+      tbody.innerHTML = list.map(u => `
+        <tr class="hover:bg-apex-dark/50">
+          <td class="py-3">${u.email}</td>
+          <td class="py-3">
+            <span class="px-2 py-1 text-xs rounded ${tierColors[u.tier] || tierColors.free}">
+              ${tierNames[u.tier] || 'Seeker'}
+            </span>
+          </td>
+          <td class="py-3">${u.messages_used || 0}${u.messages_limit ? '/' + u.messages_limit : ''}</td>
+          <td class="py-3">${u.credit_balance || 0}</td>
+          <td class="py-3">
+            <button onclick="toggleAdmin('${u.id}', ${!u.is_admin})" class="px-2 py-1 text-xs rounded ${u.is_admin ? 'bg-gold/20 text-gold' : 'bg-gray-500/20 text-gray-400'}">
+              ${u.is_admin ? 'Admin' : 'User'}
+            </button>
+          </td>
+          <td class="py-3 text-sm text-gray-400">${new Date(u.created_at).toLocaleDateString()}</td>
+          <td class="py-3">
+            <select onchange="changeTier('${u.id}', this.value)" class="bg-apex-dark border border-apex-border rounded px-2 py-1 text-sm">
+              <option value="free_trial" ${u.tier === 'free_trial' ? 'selected' : ''}>Free Trial</option>
+              <option value="seeker" ${u.tier === 'seeker' ? 'selected' : ''}>Seeker ($10)</option>
+              <option value="adept" ${u.tier === 'adept' ? 'selected' : ''}>Adept ($30)</option>
+              <option value="opus" ${u.tier === 'opus' ? 'selected' : ''}>Opus ($100)</option>
+              <option value="azothic" ${u.tier === 'azothic' ? 'selected' : ''}>Azothic ($300)</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function searchUsers() {
+      const query = document.getElementById('user-search').value.toLowerCase();
+      const filtered = users.filter(u => u.email.toLowerCase().includes(query));
+      renderUsers(filtered);
+    }
+
+    async function toggleAdmin(userId, makeAdmin) {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/users/${userId}/admin`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ is_admin: makeAdmin })
+        });
+
+        if (!res.ok) throw new Error('Failed to update');
+
+        loadUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function changeTier(userId, tier) {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/users/${userId}/tier`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ tier })
+        });
+
+        if (!res.ok) throw new Error('Failed to update');
+
+        loadUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Stats
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load stats');
+
+        const stats = await res.json();
+
+        // Overview
+        document.getElementById('stat-users').textContent = (stats.total_users || 0).toLocaleString();
+        document.getElementById('stat-messages').textContent = (stats.total_messages || 0).toLocaleString();
+        document.getElementById('stat-conversations').textContent = (stats.total_conversations || 0).toLocaleString();
+        document.getElementById('stat-coupons').textContent = stats.active_coupons || 0;
+        document.getElementById('stat-files').textContent = (stats.total_vault_files || 0).toLocaleString();
+
+        // Music
+        document.getElementById('stat-music-total').textContent = (stats.total_music_tasks || 0).toLocaleString();
+        const musicEl = document.getElementById('stat-music-breakdown');
+        if (stats.music_by_status && Object.keys(stats.music_by_status).length > 0) {
+          const statusColors = { completed: 'text-green-400', processing: 'text-yellow-400', pending: 'text-gray-400', failed: 'text-red-400' };
+          musicEl.innerHTML = Object.entries(stats.music_by_status).map(([s, c]) =>
+            `<div class="flex justify-between"><span>${s}</span><span class="${statusColors[s] || 'text-gray-400'} font-mono">${c}</span></div>`
+          ).join('');
+        } else {
+          musicEl.innerHTML = '<div class="text-gray-500">No music tasks yet</div>';
+        }
+
+        // Council
+        document.getElementById('stat-council-total').textContent = (stats.total_council_sessions || 0).toLocaleString();
+        const councilEl = document.getElementById('stat-council-breakdown');
+        if (stats.council_by_state && Object.keys(stats.council_by_state).length > 0) {
+          const stateColors = { complete: 'text-green-400', running: 'text-yellow-400', paused: 'text-orange-400', pending: 'text-gray-400' };
+          councilEl.innerHTML = Object.entries(stats.council_by_state).map(([s, c]) =>
+            `<div class="flex justify-between"><span>${s}</span><span class="${stateColors[s] || 'text-gray-400'} font-mono">${c}</span></div>`
+          ).join('');
+        } else {
+          councilEl.innerHTML = '<div class="text-gray-500">No council sessions yet</div>';
+        }
+
+        // Jam
+        document.getElementById('stat-jam-total').textContent = (stats.total_jam_sessions || 0).toLocaleString();
+
+        // Nursery
+        const nurseryJobsEl = document.getElementById('stat-nursery-jobs');
+        if (nurseryJobsEl) nurseryJobsEl.textContent = (stats.total_nursery_jobs || 0).toLocaleString();
+        const nurseryDsEl = document.getElementById('stat-nursery-datasets');
+        if (nurseryDsEl) nurseryDsEl.textContent = (stats.total_nursery_datasets || 0).toLocaleString();
+        const nurseryJobsValEl = document.getElementById('stat-nursery-jobs-val');
+        if (nurseryJobsValEl) nurseryJobsValEl.textContent = (stats.total_nursery_jobs || 0).toLocaleString();
+        const nurseryModelsEl = document.getElementById('stat-nursery-models');
+        if (nurseryModelsEl) nurseryModelsEl.textContent = (stats.total_nursery_models || 0).toLocaleString();
+        const nurseryApEl = document.getElementById('stat-nursery-apprentices');
+        if (nurseryApEl) nurseryApEl.textContent = (stats.total_nursery_apprentices || 0).toLocaleString();
+        const nurseryBreakdownEl = document.getElementById('stat-nursery-breakdown');
+        if (nurseryBreakdownEl && stats.nursery_jobs_by_status) {
+          const statusColors = { completed: 'text-green-400', running: 'text-yellow-400', pending: 'text-gray-400', failed: 'text-red-400', uploading: 'text-blue-400' };
+          nurseryBreakdownEl.innerHTML = Object.entries(stats.nursery_jobs_by_status).map(([s, c]) =>
+            `<div class="flex justify-between"><span class="capitalize">${s}</span><span class="${statusColors[s] || 'text-gray-400'} font-mono">${c}</span></div>`
+          ).join('');
+        }
+
+        // Storage & Memory
+        document.getElementById('stat-vectors').textContent = (stats.total_neural_vectors || 0).toLocaleString();
+        const storageMb = stats.total_vault_storage_mb || 0;
+        document.getElementById('stat-vault-storage').textContent = storageMb >= 1024
+          ? (storageMb / 1024).toFixed(1) + ' GB'
+          : storageMb.toFixed(1) + ' MB';
+        document.getElementById('stat-vault-files-label').textContent =
+          `${(stats.total_vault_files || 0).toLocaleString()} files stored`;
+
+        // Users by tier
+        const breakdown = document.getElementById('tier-breakdown');
+        if (stats.users_by_tier) {
+          const tierColors = { 'Free Trial': 'text-gray-400', Seeker: 'text-green-400', Adept: 'text-blue-400', Opus: 'text-yellow-400', Azothic: 'text-purple-400' };
+          breakdown.innerHTML = Object.entries(stats.users_by_tier).map(([tier, count]) => `
+            <div class="flex justify-between items-center">
+              <span class="${tierColors[tier] || 'text-gray-400'}">${tier}</span>
+              <span class="font-mono font-bold">${count}</span>
+            </div>
+          `).join('');
+        }
+
+        // LLM Providers
+        const providerGrid = document.getElementById('provider-grid');
+        if (stats.providers && stats.providers.length > 0) {
+          providerGrid.innerHTML = stats.providers.map(p => `
+            <div class="flex items-center gap-2 p-2 rounded-lg ${p.available ? 'bg-green-500/10' : 'bg-gray-500/10'}">
+              <span class="${p.available ? 'text-green-400' : 'text-gray-500'}">${p.available ? '●' : '○'}</span>
+              <div>
+                <div class="text-sm font-medium">${p.name}</div>
+                <div class="text-xs text-gray-500">${p.model_count} model${p.model_count !== 1 ? 's' : ''}${p.available ? '' : ' (no key)'}</div>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        document.getElementById('stat-users').textContent = '-';
+        document.getElementById('stat-messages').textContent = '-';
+        document.getElementById('stat-conversations').textContent = '-';
+        document.getElementById('stat-coupons').textContent = '-';
+        document.getElementById('stat-files').textContent = '-';
+      }
+    }
+
+    // Reports
+    let reports = [];
+
+    async function loadReports(statusFilter) {
+      const loading = document.getElementById('reports-loading');
+      const empty = document.getElementById('reports-empty');
+      const table = document.getElementById('reports-table');
+
+      loading.classList.remove('hidden');
+      empty.classList.add('hidden');
+      table.classList.add('hidden');
+
+      try {
+        let url = `${API_BASE}/api/v1/admin/reports`;
+        if (statusFilter) url += `?status=${statusFilter}`;
+
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load reports');
+
+        const data = await res.json();
+        reports = data.reports || data;
+
+        loading.classList.add('hidden');
+        renderReports(reports);
+      } catch (err) {
+        loading.textContent = 'Failed to load reports';
+      }
+    }
+
+    function renderReports(list) {
+      const empty = document.getElementById('reports-empty');
+      const table = document.getElementById('reports-table');
+      const tbody = document.getElementById('reports-body');
+
+      if (list.length === 0) {
+        empty.classList.remove('hidden');
+        table.classList.add('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      table.classList.remove('hidden');
+
+      const statusBadge = {
+        open: 'bg-red-500/20 text-red-400',
+        acknowledged: 'bg-amber-500/20 text-amber-400',
+        resolved: 'bg-green-500/20 text-green-400',
+        closed: 'bg-gray-500/20 text-gray-400'
+      };
+
+      tbody.innerHTML = list.map(r => {
+        const desc = r.description || '';
+        const truncated = desc.length > 60 ? desc.substring(0, 60) + '...' : desc;
+        const badge = statusBadge[r.status] || statusBadge.open;
+
+        return `
+          <tr class="hover:bg-apex-dark/50 cursor-pointer" onclick="toggleReportDetail('${r.id}')">
+            <td class="py-3">
+              <span class="px-2 py-1 text-xs rounded ${badge}">${r.status}</span>
+            </td>
+            <td class="py-3 text-sm">${r.category || '-'}</td>
+            <td class="py-3 text-sm">${r.user_email || '-'}</td>
+            <td class="py-3 text-sm text-gray-300">${truncated}</td>
+            <td class="py-3 text-sm text-gray-400">${r.page || '-'}</td>
+            <td class="py-3 text-sm text-gray-400">${new Date(r.created_at).toLocaleDateString()}</td>
+          </tr>
+          <tr id="report-detail-${r.id}" class="hidden">
+            <td colspan="6" class="py-4 px-4 bg-apex-dark/30">
+              <div class="space-y-3">
+                <div>
+                  <span class="text-xs text-gray-400 uppercase">Full Description</span>
+                  <p class="text-sm text-gray-200 mt-1">${desc}</p>
+                </div>
+                ${r.browser_info ? `<div>
+                  <span class="text-xs text-gray-400 uppercase">Browser Info</span>
+                  <p class="text-sm text-gray-300 mt-1 font-mono">${r.browser_info}</p>
+                </div>` : ''}
+                <div class="flex gap-4 text-xs text-gray-500">
+                  <span>Created: ${new Date(r.created_at).toLocaleString()}</span>
+                  ${r.updated_at ? `<span>Updated: ${new Date(r.updated_at).toLocaleString()}</span>` : ''}
+                </div>
+                <div class="flex gap-3 items-end pt-2 border-t border-apex-border">
+                  <div>
+                    <label class="block text-xs text-gray-400 mb-1">Status</label>
+                    <select id="report-status-${r.id}" class="input w-40 text-sm">
+                      <option value="open" ${r.status === 'open' ? 'selected' : ''}>Open</option>
+                      <option value="acknowledged" ${r.status === 'acknowledged' ? 'selected' : ''}>Acknowledged</option>
+                      <option value="resolved" ${r.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                      <option value="closed" ${r.status === 'closed' ? 'selected' : ''}>Closed</option>
+                    </select>
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-xs text-gray-400 mb-1">Admin Notes</label>
+                    <textarea id="report-notes-${r.id}" class="input text-sm" rows="2" placeholder="Add notes...">${r.admin_notes || ''}</textarea>
+                  </div>
+                  <button onclick="event.stopPropagation(); updateReport('${r.id}')" class="btn-primary text-sm">Save</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function toggleReportDetail(id) {
+      const detail = document.getElementById(`report-detail-${id}`);
+      if (detail) {
+        detail.classList.toggle('hidden');
+      }
+    }
+
+    async function updateReport(id) {
+      const status = document.getElementById(`report-status-${id}`).value;
+      const admin_notes = document.getElementById(`report-notes-${id}`).value;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/reports/${id}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status, admin_notes })
+        });
+
+        if (!res.ok) throw new Error('Failed to update report');
+
+        const filter = document.getElementById('report-status-filter').value;
+        loadReports(filter);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Usage
+    async function loadUsage() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to load stats');
+        const stats = await res.json();
+
+        // Messages & Features
+        const featEl = document.getElementById('usage-features');
+        if (featEl) {
+          featEl.innerHTML = `
+            <div class="flex justify-between text-sm"><span class="text-gray-300">Total Messages</span><span class="font-mono text-gold">${(stats.total_messages || 0).toLocaleString()}</span></div>
+            <div class="flex justify-between text-sm"><span class="text-gray-300">Conversations</span><span class="font-mono">${(stats.total_conversations || 0).toLocaleString()}</span></div>
+            <div class="flex justify-between text-sm"><span class="text-gray-300">Music Tasks</span><span class="font-mono">${(stats.total_music_tasks || 0).toLocaleString()}</span></div>
+            <div class="flex justify-between text-sm"><span class="text-gray-300">Council Sessions</span><span class="font-mono">${(stats.total_council_sessions || 0).toLocaleString()}</span></div>
+            <div class="flex justify-between text-sm"><span class="text-gray-300">Jam Sessions</span><span class="font-mono">${(stats.total_jam_sessions || 0).toLocaleString()}</span></div>
+            <div class="flex justify-between text-sm"><span class="text-gray-300">Active Coupons</span><span class="font-mono">${(stats.active_coupons || 0).toLocaleString()}</span></div>
+          `;
+        }
+
+        // Tier Distribution
+        const distEl = document.getElementById('usage-tier-dist');
+        if (distEl && stats.users_by_tier) {
+          const tierBarColors = {
+            'Free Trial': '#6b7280', 'Seeker': '#22c55e',
+            'Adept': '#3b82f6', 'Opus': '#d4af37', 'Azothic': '#a855f7'
+          };
+          const total = Object.values(stats.users_by_tier).reduce((a, b) => a + b, 0) || 1;
+          distEl.innerHTML = Object.entries(stats.users_by_tier).map(([tier, count]) => {
+            const pct = Math.round(count / total * 100);
+            const color = tierBarColors[tier] || '#6b7280';
+            return `
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span style="color: ${color}">${tier}</span>
+                  <span class="text-gray-400">${count} (${pct}%)</span>
+                </div>
+                <div class="h-2 bg-apex-darker rounded-full overflow-hidden">
+                  <div class="h-full rounded-full" style="width:${pct}%; background:${color}; opacity:0.7;"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Usage load error:', err);
+      }
+    }
+
+    // Grants
+    const GRANTABLE_PROVIDERS = ['together', 'groq', 'deepseek', 'qwen', 'moonshot', 'suno'];
+    const GRANT_TIERS = ['free_trial', 'seeker', 'adept', 'opus', 'azothic'];
+
+    const PROVIDER_DISPLAY_NAMES = {
+      together: 'Together AI',
+      groq: 'Groq',
+      deepseek: 'DeepSeek',
+      qwen: 'Qwen',
+      moonshot: 'Moonshot (Kimi)',
+      suno: 'Suno'
+    };
+
+    const TIER_DISPLAY_NAMES = {
+      free_trial: 'Free Trial',
+      seeker: 'Seeker',
+      adept: 'Adept',
+      opus: 'Opus',
+      azothic: 'Azothic'
+    };
+
+    let grantsData = null;
+    let grantSelectedUser = null;
+
+    async function loadGrants() {
+      const tierLoading = document.getElementById('grants-tier-loading');
+      const tierTable = document.getElementById('grants-tier-table');
+      const overviewLoading = document.getElementById('grants-overview-loading');
+      const overview = document.getElementById('grants-overview');
+
+      tierLoading.classList.remove('hidden');
+      tierTable.classList.add('hidden');
+      overviewLoading.classList.remove('hidden');
+      overview.classList.add('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/grants`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load grants');
+
+        grantsData = await res.json();
+
+        renderTierGrants(grantsData.tier_grants || {});
+        renderGrantsOverview(grantsData);
+
+        tierLoading.classList.add('hidden');
+        tierTable.classList.remove('hidden');
+        overviewLoading.classList.add('hidden');
+        overview.classList.remove('hidden');
+      } catch (err) {
+        tierLoading.textContent = 'Failed to load grants';
+        overviewLoading.textContent = 'Failed to load grants overview';
+        console.error('Grants load error:', err);
+      }
+    }
+
+    function renderTierGrants(tierGrants) {
+      const tbody = document.getElementById('grants-tier-body');
+      const providers = (grantsData && grantsData.grantable_providers) || GRANTABLE_PROVIDERS;
+
+      tbody.innerHTML = providers.map(provider => {
+        const cells = GRANT_TIERS.map(tier => {
+          const tierData = tierGrants[tier] || {};
+          const granted = !!tierData[provider];
+          return `
+            <td class="py-3 px-3 text-center">
+              <input type="checkbox" id="tier-grant-${tier}-${provider}"
+                     ${granted ? 'checked' : ''}
+                     class="w-4 h-4 accent-gold cursor-pointer">
+            </td>
+          `;
+        }).join('');
+
+        return `
+          <tr class="hover:bg-apex-dark/50">
+            <td class="py-3 pr-4 text-sm font-medium">${PROVIDER_DISPLAY_NAMES[provider] || provider}</td>
+            ${cells}
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function saveTierGrants() {
+      const statusEl = document.getElementById('grants-tier-status');
+      const providers = (grantsData && grantsData.grantable_providers) || GRANTABLE_PROVIDERS;
+      let saveCount = 0;
+      let errorCount = 0;
+
+      statusEl.textContent = 'Saving...';
+      statusEl.className = 'text-sm mt-3 text-gray-400';
+      statusEl.classList.remove('hidden');
+
+      for (const tier of GRANT_TIERS) {
+        const grants = {};
+        for (const provider of providers) {
+          const checkbox = document.getElementById(`tier-grant-${tier}-${provider}`);
+          if (checkbox && checkbox.checked) {
+            grants[provider] = true;
+          }
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/admin/grants/tier`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tier, grants })
+          });
+
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.detail || `Failed for ${tier}`);
+          }
+
+          saveCount++;
+        } catch (err) {
+          console.error(`Error saving grants for ${tier}:`, err);
+          errorCount++;
+        }
+      }
+
+      if (errorCount === 0) {
+        statusEl.textContent = `Saved tier grants for all ${saveCount} tiers.`;
+        statusEl.className = 'text-sm mt-3 text-green-400';
+      } else {
+        statusEl.textContent = `Saved ${saveCount} tiers, ${errorCount} failed.`;
+        statusEl.className = 'text-sm mt-3 text-red-400';
+      }
+
+      // Reload to refresh overview
+      setTimeout(() => loadGrants(), 1500);
+    }
+
+    async function searchGrantUser() {
+      const email = document.getElementById('grant-user-search').value.trim();
+      if (!email) return;
+
+      const resultEl = document.getElementById('grant-user-result');
+      const emptyEl = document.getElementById('grant-user-empty');
+      const statusEl = document.getElementById('grant-user-status');
+
+      resultEl.classList.add('hidden');
+      emptyEl.classList.add('hidden');
+      statusEl.classList.add('hidden');
+
+      try {
+        // Search users by email
+        const res = await fetch(`${API_BASE}/api/v1/admin/users`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to search users');
+
+        const data = await res.json();
+        const userList = data.users || [];
+        const user = userList.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+        if (!user) {
+          emptyEl.classList.remove('hidden');
+          grantSelectedUser = null;
+          return;
+        }
+
+        grantSelectedUser = user;
+
+        // Load current grants for this user from grantsData
+        const userGrants = {};
+        if (grantsData && grantsData.user_grants) {
+          const ug = grantsData.user_grants.find(g => g.user_id === user.id);
+          if (ug && ug.grants) {
+            Object.assign(userGrants, ug.grants);
+          }
+        }
+
+        const tierColors = {
+          free_trial: 'bg-gray-500/20 text-gray-400',
+          seeker: 'bg-green-500/20 text-green-400',
+          adept: 'bg-blue-500/20 text-blue-400',
+          opus: 'bg-yellow-500/20 text-yellow-400',
+          azothic: 'bg-purple-500/20 text-purple-400',
+        };
+
+        document.getElementById('grant-user-email').textContent = user.email;
+        const tierBadge = document.getElementById('grant-user-tier');
+        tierBadge.textContent = TIER_DISPLAY_NAMES[user.tier] || user.tier;
+        tierBadge.className = `px-2 py-0.5 rounded text-xs font-medium ${tierColors[user.tier] || tierColors.free_trial}`;
+
+        const providers = (grantsData && grantsData.grantable_providers) || GRANTABLE_PROVIDERS;
+        const providersEl = document.getElementById('grant-user-providers');
+        providersEl.innerHTML = providers.map(provider => {
+          const granted = !!userGrants[provider];
+          const grantObj = userGrants[provider];
+          const expiresAt = (grantObj && typeof grantObj === 'object' && grantObj.expires_at) ? grantObj.expires_at.slice(0, 16) : '';
+          const note = (grantObj && typeof grantObj === 'object' && grantObj.note) ? grantObj.note : '';
+
+          return `
+            <div class="flex flex-wrap items-center gap-3 py-2 border-b border-apex-border last:border-0">
+              <label class="flex items-center gap-2 min-w-[160px] cursor-pointer">
+                <input type="checkbox" id="user-grant-${provider}" ${granted ? 'checked' : ''} class="w-4 h-4 accent-gold cursor-pointer">
+                <span class="text-sm font-medium">${PROVIDER_DISPLAY_NAMES[provider] || provider}</span>
+              </label>
+              <div class="flex items-center gap-2 flex-1 flex-wrap">
+                <input type="datetime-local" id="user-grant-expiry-${provider}" class="input text-xs w-48" value="${expiresAt}" placeholder="Expires (optional)">
+                <input type="text" id="user-grant-note-${provider}" class="input text-xs flex-1 min-w-[120px]" value="${note}" placeholder="Note (optional)">
+                <button onclick="saveUserGrant('${user.id}', '${provider}')" class="btn-primary text-xs px-3 py-1">Save</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        resultEl.classList.remove('hidden');
+      } catch (err) {
+        emptyEl.textContent = 'Error searching users: ' + err.message;
+        emptyEl.classList.remove('hidden');
+        console.error('Grant user search error:', err);
+      }
+    }
+
+    async function saveUserGrant(userId, provider) {
+      const checkbox = document.getElementById(`user-grant-${provider}`);
+      const expiryInput = document.getElementById(`user-grant-expiry-${provider}`);
+      const noteInput = document.getElementById(`user-grant-note-${provider}`);
+      const statusEl = document.getElementById('grant-user-status');
+
+      const enabled = checkbox ? checkbox.checked : false;
+      const expiresAt = expiryInput ? expiryInput.value : '';
+      const note = noteInput ? noteInput.value : '';
+
+      statusEl.classList.remove('hidden');
+      statusEl.textContent = 'Saving...';
+      statusEl.className = 'text-sm mt-3 text-gray-400';
+
+      try {
+        if (!enabled) {
+          // Delete the grant
+          const res = await fetch(`${API_BASE}/api/v1/admin/grants/user/${userId}/${provider}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.detail || 'Failed to remove grant');
+          }
+
+          statusEl.textContent = `Removed ${PROVIDER_DISPLAY_NAMES[provider] || provider} grant.`;
+          statusEl.className = 'text-sm mt-3 text-green-400';
+        } else {
+          // Create/update the grant
+          const payload = {
+            provider,
+            enabled: true
+          };
+          if (expiresAt) {
+            payload.expires_at = new Date(expiresAt).toISOString();
+          }
+          if (note) {
+            payload.note = note;
+          }
+
+          const res = await fetch(`${API_BASE}/api/v1/admin/grants/user/${userId}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.detail || 'Failed to save grant');
+          }
+
+          statusEl.textContent = `Saved ${PROVIDER_DISPLAY_NAMES[provider] || provider} grant.`;
+          statusEl.className = 'text-sm mt-3 text-green-400';
+        }
+
+        // Reload grants data to refresh overview
+        setTimeout(() => loadGrants(), 1000);
+      } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        statusEl.className = 'text-sm mt-3 text-red-400';
+        console.error('Save user grant error:', err);
+      }
+    }
+
+    function renderGrantsOverview(data) {
+      const tiersEl = document.getElementById('grants-overview-tiers');
+      const usersEmptyEl = document.getElementById('grants-overview-users-empty');
+      const usersTable = document.getElementById('grants-overview-users-table');
+      const usersBody = document.getElementById('grants-overview-users-body');
+
+      // Tier grants summary
+      const tierGrants = data.tier_grants || {};
+      const tierEntries = GRANT_TIERS.map(tier => {
+        const grants = tierGrants[tier] || {};
+        const activeProviders = Object.keys(grants).filter(p => !!grants[p]);
+        return { tier, activeProviders };
+      });
+
+      const tierColors = {
+        free_trial: 'text-gray-400',
+        seeker: 'text-green-400',
+        adept: 'text-blue-400',
+        opus: 'text-yellow-400',
+        azothic: 'text-purple-400'
+      };
+
+      tiersEl.innerHTML = tierEntries.map(({ tier, activeProviders }) => {
+        const providerBadges = activeProviders.length > 0
+          ? activeProviders.map(p => `<span class="px-2 py-0.5 rounded text-xs font-medium bg-gold/20 text-gold">${PROVIDER_DISPLAY_NAMES[p] || p}</span>`).join(' ')
+          : '<span class="text-gray-500 text-sm">No providers granted</span>';
+
+        return `
+          <div class="flex items-center gap-3 py-2">
+            <span class="text-sm font-medium min-w-[100px] ${tierColors[tier] || 'text-gray-400'}">${TIER_DISPLAY_NAMES[tier] || tier}</span>
+            <div class="flex flex-wrap gap-1">${providerBadges}</div>
+          </div>
+        `;
+      }).join('');
+
+      // User grants list
+      const userGrants = data.user_grants || [];
+      const usersWithGrants = userGrants.filter(u => u.grants && Object.keys(u.grants).length > 0);
+
+      if (usersWithGrants.length === 0) {
+        usersEmptyEl.classList.remove('hidden');
+        usersTable.classList.add('hidden');
+      } else {
+        usersEmptyEl.classList.add('hidden');
+        usersTable.classList.remove('hidden');
+
+        usersBody.innerHTML = usersWithGrants.map(u => {
+          const providerBadges = Object.keys(u.grants)
+            .filter(p => !!u.grants[p])
+            .map(p => `<span class="px-2 py-0.5 rounded text-xs font-medium bg-gold/20 text-gold">${PROVIDER_DISPLAY_NAMES[p] || p}</span>`)
+            .join(' ');
+
+          return `
+            <tr class="hover:bg-apex-dark/50">
+              <td class="py-3 text-sm">${u.email || '-'}</td>
+              <td class="py-3 text-sm text-gray-400">${u.display_name || '-'}</td>
+              <td class="py-3">${providerBadges || '<span class="text-gray-500 text-sm">None</span>'}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    // Allow Enter key in grant user search
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('grant-user-search');
+      if (searchInput) {
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            searchGrantUser();
+          }
+        });
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════════
+    // Errors
+    // ═══════════════════════════════════════════════════════════════════
+
+    let errorsOffset = 0;
+    const errorsLimit = 50;
+    let errorsTotal = 0;
+
+    async function loadErrorSettings() {
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/errors/settings`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const s = await res.json();
+        document.getElementById('error-tracking-enabled').checked = s.enabled !== false;
+        document.getElementById('error-min-severity').value = s.min_severity || 'warning';
+        document.getElementById('error-retention').value = String(s.retention_days || 30);
+      } catch (err) {
+        console.error('[Admin] Failed to load error settings:', err);
+      }
+    }
+
+    async function updateErrorSettings() {
+      try {
+        const payload = {
+          enabled: document.getElementById('error-tracking-enabled').checked,
+          min_severity: document.getElementById('error-min-severity').value,
+          retention_days: parseInt(document.getElementById('error-retention').value),
+        };
+        await fetch(`${API_BASE}/api/v1/admin/errors/settings`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.error('[Admin] Failed to update error settings:', err);
+      }
+    }
+
+    async function loadErrors() {
+      const loading = document.getElementById('errors-loading');
+      const empty = document.getElementById('errors-empty');
+      const table = document.getElementById('errors-table');
+      const tbody = document.getElementById('errors-body');
+      const pagination = document.getElementById('errors-pagination');
+
+      loading.classList.remove('hidden');
+      empty.classList.add('hidden');
+      table.classList.add('hidden');
+      pagination.classList.add('hidden');
+
+      const hours = document.getElementById('error-hours').value;
+      const category = document.getElementById('error-filter-category').value;
+      const severity = document.getElementById('error-filter-severity').value;
+
+      let url = `${API_BASE}/api/v1/admin/errors?hours=${hours}&limit=${errorsLimit}&offset=${errorsOffset}`;
+      if (category) url += `&category=${category}`;
+      if (severity) url += `&severity=${severity}`;
+
+      try {
+        const [errRes, statsRes] = await Promise.all([
+          fetch(url, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_BASE}/api/v1/admin/errors/stats?hours=${hours}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+        ]);
+
+        if (!errRes.ok) throw new Error('Failed to load errors');
+
+        const data = await errRes.json();
+        errorsTotal = data.total;
+
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          document.getElementById('err-stat-total').textContent = (stats.total || 0).toLocaleString();
+          document.getElementById('err-stat-critical').textContent = (stats.by_severity?.critical || 0).toLocaleString();
+          document.getElementById('err-stat-error').textContent = (stats.by_severity?.error || 0).toLocaleString();
+          document.getElementById('err-stat-warning').textContent = (stats.by_severity?.warning || 0).toLocaleString();
+        }
+
+        loading.classList.add('hidden');
+
+        if (data.errors.length === 0) {
+          empty.classList.remove('hidden');
+          return;
+        }
+
+        table.classList.remove('hidden');
+
+        const sevColors = {
+          critical: 'bg-red-500/20 text-red-400',
+          error: 'bg-orange-500/20 text-orange-400',
+          warning: 'bg-yellow-500/20 text-yellow-400',
+        };
+
+        const catLabels = {
+          backend_exception: 'Backend',
+          http_error: 'HTTP',
+          tool_failure: 'Tool',
+          frontend_error: 'Frontend',
+          llm_error: 'LLM',
+          webhook_error: 'Webhook',
+        };
+
+        tbody.innerHTML = data.errors.map(e => {
+          const time = new Date(e.created_at);
+          const timeStr = time.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const msg = e.message.length > 80 ? e.message.slice(0, 80) + '...' : e.message;
+          return `
+            <tr class="hover:bg-apex-dark/50 text-sm">
+              <td class="py-2 text-gray-400 whitespace-nowrap">${timeStr}</td>
+              <td class="py-2">
+                <span class="px-2 py-0.5 text-xs rounded bg-apex-dark border border-apex-border">${catLabels[e.category] || e.category}</span>
+              </td>
+              <td class="py-2">
+                <span class="px-2 py-0.5 text-xs rounded ${sevColors[e.severity] || ''}">${e.severity}</span>
+              </td>
+              <td class="py-2 font-mono text-xs text-gray-300">${e.error_type}</td>
+              <td class="py-2 text-gray-300 max-w-xs truncate" title="${e.message.replace(/"/g, '&quot;')}">${msg}</td>
+              <td class="py-2 text-gray-500 text-xs font-mono">${e.endpoint || '-'}</td>
+            </tr>
+          `;
+        }).join('');
+
+        if (errorsTotal > errorsLimit) {
+          pagination.classList.remove('hidden');
+          const page = Math.floor(errorsOffset / errorsLimit) + 1;
+          const totalPages = Math.ceil(errorsTotal / errorsLimit);
+          document.getElementById('errors-page-info').textContent = `Page ${page} of ${totalPages} (${errorsTotal} total)`;
+          document.getElementById('errors-prev-btn').disabled = errorsOffset === 0;
+          document.getElementById('errors-next-btn').disabled = errorsOffset + errorsLimit >= errorsTotal;
+        }
+      } catch (err) {
+        loading.textContent = 'Failed to load errors';
+        console.error('[Admin] Error loading errors:', err);
+      }
+    }
+
+    function errorsPrevPage() {
+      errorsOffset = Math.max(0, errorsOffset - errorsLimit);
+      loadErrors();
+    }
+
+    function errorsNextPage() {
+      if (errorsOffset + errorsLimit < errorsTotal) {
+        errorsOffset += errorsLimit;
+        loadErrors();
+      }
+    }
+
+    async function exportErrors(format) {
+      const hours = document.getElementById('error-hours').value;
+      const category = document.getElementById('error-filter-category').value;
+      const severity = document.getElementById('error-filter-severity').value;
+
+      let url = `${API_BASE}/api/v1/admin/errors/export?format=${format}&hours=${hours}`;
+      if (category) url += `&category=${category}`;
+      if (severity) url += `&severity=${severity}`;
+
+      try {
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Export failed');
+
+        if (format === 'csv') {
+          const blob = await res.blob();
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'error_logs.csv';
+          a.click();
+          URL.revokeObjectURL(a.href);
+        } else {
+          const data = await res.json();
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'error_logs.json';
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }
+      } catch (err) {
+        alert('Export failed: ' + err.message);
+      }
+    }
+
+    async function purgeErrors() {
+      if (!confirm('This will delete ALL error logs. Continue?')) return;
+      if (!confirm('Are you sure? This cannot be undone.')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/admin/errors/purge?confirm=true`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Purge failed');
+        const data = await res.json();
+        alert(`Purged ${data.deleted} error log entries`);
+        loadErrors();
+      } catch (err) {
+        alert('Purge failed: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

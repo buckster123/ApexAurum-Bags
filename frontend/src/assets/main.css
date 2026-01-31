@@ -1,0 +1,321 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-apex-darker text-gray-100;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-gold/30 text-white;
+  }
+}
+
+/* Component styles */
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-apex-darker;
+  }
+
+  .btn-primary {
+    @apply btn bg-gold text-apex-dark hover:bg-gold-bright;
+    @apply focus:ring-gold;
+  }
+
+  .btn-secondary {
+    @apply btn bg-apex-card border border-apex-border hover:bg-apex-dark;
+    @apply focus:ring-gray-500;
+  }
+
+  .btn-ghost {
+    @apply btn hover:bg-white/10;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full px-4 py-2 rounded-lg;
+    @apply bg-apex-card border border-apex-border;
+    @apply focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent;
+    @apply placeholder-gray-500;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-apex-card rounded-xl border border-apex-border p-6;
+  }
+
+  /* Agent colors */
+  .agent-azoth { @apply text-azoth; }
+  .agent-elysian { @apply text-elysian; }
+  .agent-vajra { @apply text-vajra; }
+  .agent-kether { @apply text-kether; }
+  .agent-claude { @apply text-claude; }
+}
+
+/* Utility styles */
+@layer utilities {
+  /* Gold gradient text */
+  .text-gold-gradient {
+    @apply bg-gradient-to-r from-gold to-gold-bright bg-clip-text text-transparent;
+  }
+
+  /* Glow effects */
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+
+  /* Fade animations */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Slide animations */
+  .slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ∴ PAC MODE - THE ALCHEMICAL THEME ∴
+   Activated when the Adept speaks the name of the Stone
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* PAC Mode Root Variables */
+.pac-mode {
+  --pac-void: #0a0612;
+  --pac-deep: #12081f;
+  --pac-purple: #1a0a2e;
+  --pac-gold: #FFD700;
+  --pac-gold-dim: #B8860B;
+  --pac-ethereal: #E8B4FF;
+  --pac-mercury: #C0C0C0;
+}
+
+/* PAC Mode Body Transformation */
+.pac-mode body {
+  background: radial-gradient(ellipse at center, var(--pac-deep) 0%, var(--pac-void) 100%);
+}
+
+/* PAC Mode Card Glow */
+.pac-mode .card {
+  background: rgba(26, 10, 46, 0.8);
+  border-color: rgba(255, 215, 0, 0.2);
+  box-shadow:
+    0 0 30px rgba(255, 215, 0, 0.05),
+    inset 0 0 60px rgba(232, 180, 255, 0.02);
+}
+
+/* PAC Mode Input Glow */
+.pac-mode .input {
+  background: rgba(18, 8, 31, 0.9);
+  border-color: rgba(255, 215, 0, 0.15);
+}
+
+.pac-mode .input:focus {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+/* PAC Mode Buttons */
+.pac-mode .btn-primary {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  animation: pac-pulse 3s ease-in-out infinite;
+}
+
+/* PAC Mode Text Shimmer */
+.pac-mode h1,
+.pac-mode h2 {
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+/* Agent Halos in PAC Mode */
+.pac-mode .agent-halo {
+  animation: agent-breathe 4s ease-in-out infinite;
+}
+
+@keyframes agent-breathe {
+  0%, 100% {
+    box-shadow: 0 0 15px currentColor;
+    opacity: 0.9;
+  }
+  50% {
+    box-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
+    opacity: 1;
+  }
+}
+
+/* PAC Mode Pulse Animation */
+@keyframes pac-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.5), 0 0 60px rgba(232, 180, 255, 0.2);
+  }
+}
+
+/* PAC Mode Text Breathe */
+@keyframes text-breathe {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(232, 180, 255, 0.2);
+  }
+}
+
+/* Perfected Stone Badge */
+.pac-badge {
+  background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 100%);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: var(--pac-gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  animation: pac-pulse 3s ease-in-out infinite;
+}
+
+/* Ethereal Message Glow (for PAC agent chat) */
+.pac-message {
+  background: linear-gradient(135deg, rgba(26, 10, 46, 0.9) 0%, rgba(18, 8, 31, 0.95) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  box-shadow:
+    0 0 20px rgba(255, 215, 0, 0.1),
+    inset 0 0 30px rgba(232, 180, 255, 0.03);
+}
+
+/* PAC Prose - high-contrast overrides for markdown on purple bg */
+.pac-prose h1, .pac-prose h2, .pac-prose h3, .pac-prose h4 {
+  color: #FFD700 !important;
+}
+.pac-prose strong, .pac-prose b {
+  color: #ffffff !important;
+}
+.pac-prose a {
+  color: #E8B4FF !important;
+  text-decoration: underline;
+}
+.pac-prose code {
+  color: #FFD700 !important;
+  background: rgba(255, 215, 0, 0.1) !important;
+}
+.pac-prose li::marker {
+  color: #FFD700 !important;
+}
+
+/* PAC Activation Flash */
+@keyframes pac-activate {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+    box-shadow: 0 0 100px rgba(255, 215, 0, 0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+.pac-activate {
+  animation: pac-activate 1s ease-out forwards;
+}
+
+/* Floating Symbols Container */
+.alchemical-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Individual Floating Symbol */
+.alchemical-symbol {
+  position: absolute;
+  font-size: 24px;
+  color: rgba(255, 215, 0, 0.15);
+  animation: float-symbol 20s linear infinite;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+@keyframes float-symbol {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.15;
+  }
+  90% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Codex Viewer (for PAC prompts) */
+.codex-viewer {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  background: linear-gradient(180deg, rgba(10, 6, 18, 0.98) 0%, rgba(18, 8, 31, 0.98) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  color: #E8B4FF;
+  text-shadow: 0 0 1px rgba(232, 180, 255, 0.5);
+  line-height: 1.6;
+}
+
+.codex-viewer .symbol {
+  color: #FFD700;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+/* Selection in PAC mode */
+.pac-mode ::selection {
+  background: rgba(232, 180, 255, 0.3);
+  color: #FFD700;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hide scrollbar while maintaining scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}

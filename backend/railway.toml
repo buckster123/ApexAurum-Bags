@@ -1,0 +1,6 @@
+[build]
+# Let Railway auto-detect Dockerfile in this directory
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

@@ -1,0 +1,63 @@
+# ApexAurum Cloud - Backend Dependencies
+# Build: 2026-01-25-v5
+
+# Core Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Database
+sqlalchemy[asyncio]>=2.0.25
+asyncpg>=0.29.0
+alembic>=1.13.0
+pgvector>=0.2.4
+
+# Authentication
+pyjwt>=2.8.0
+passlib[argon2]>=1.7.4
+argon2-cffi>=23.1.0
+cryptography>=42.0.0  # For API key encryption (Fernet)
+
+# Redis (disabled for now - enable when implementing background tasks)
+# redis>=5.0.0
+# arq>=0.25.0  # Async task queue
+
+# HTTP Client
+httpx>=0.26.0
+aiohttp>=3.9.0
+
+# AI/ML
+anthropic>=0.75.0
+openai>=1.12.0  # For multi-provider LLM support (OpenAI-compatible APIs)
+numpy>=1.26.0
+fastembed>=0.2.0  # Local embeddings via ONNX (lightweight, no PyTorch needed)
+
+# Payments
+stripe>=7.0.0  # Billing and subscriptions
+
+# Optional: sentence-transformers (large, needs lots of RAM)
+# sentence-transformers>=2.2.0
+
+# Rate Limiting
+slowapi>=0.1.9
+
+# Utilities
+python-multipart>=0.0.7
+python-dotenv>=1.0.0
+email-validator>=2.1.0  # Required by Pydantic for email validation
+
+# Object Storage (optional for now)
+# boto3>=1.34.0
+
+# Development (not needed in prod)
+# pytest>=7.4.0
+# pytest-asyncio>=0.23.0
+# pytest-cov>=4.1.0
+
+# Music generation
+midiutil>=1.2.1  # MIDI file creation for music_compose
+midi2audio>=0.1.1  # FluidSynth wrapper for MIDI→audio
+
+# Optional: Better embeddings
+# voyageai  # Add when implementing vector search
